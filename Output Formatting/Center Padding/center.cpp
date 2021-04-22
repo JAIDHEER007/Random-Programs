@@ -1,5 +1,4 @@
 #include<iostream>
-#include<cmath>
 using namespace std; 
 
 string center(int width,string text){
