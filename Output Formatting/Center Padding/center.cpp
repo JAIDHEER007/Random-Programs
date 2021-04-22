@@ -32,5 +32,6 @@ int main(){
 	cout<<"|"<<center(20,"M. RAJKUMAR")<<"|"<<center(20,to_string(7.86))<<"|"<<endl;
 	cout<<"|"<<center(20,"S. JAIDHEER")<<"|"<<center(20,to_string(8.5))<<"|"<<endl;
 	cout<<string(43,'-')<<endl<<endl;
+
 	return 0;
 }
