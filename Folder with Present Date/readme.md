@@ -1,7 +1,7 @@
 # Present Date.bat
 ## What is the use of this batch script?
-### If you want to create a folder with present date as name with ease, use this batch script. With a click it creates a folder with name as system date.
-### So, basically it creates a folder with system date. But where??
+### If you want to create a folder with present date as name with ease, use this batch script. With a click it creates a folder with system date as name.
+### So, basically it creates a folder. But where??
 ### It does it in the folder where the batch script is located. 
 #### if you want to change it, you can by changing path variables in the program. 
 
