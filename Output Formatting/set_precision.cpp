@@ -8,7 +8,7 @@ using namespace std;
 int main(){
 	double pi = 3.1415926;
 	
-	cout<<pi<<endl;								//3.14159
+	cout<<pi<<endl;					//3.14159
 	cout<<fixed<<setprecision(1)<<pi<<endl;		//3.1
 	cout<<fixed<<setprecision(2)<<pi<<endl;		//3.14
 	cout<<fixed<<setprecision(3)<<pi<<endl;		//3.142
