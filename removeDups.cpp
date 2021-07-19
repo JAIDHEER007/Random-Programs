@@ -108,7 +108,7 @@ int main()
 // =============================================================================
 
 // a  b  b  a  c
-//       	   ^	
+//             ^	
 
 // For character 'c' check the table 
 // If the value is zero, add it to the 'res'. 
