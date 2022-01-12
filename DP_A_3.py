@@ -64,3 +64,5 @@ try:
 except ModuleNotFoundError as mnfe:
     print(mnfe.msg)
     sys.exit("Please install the required packages using PIP")
+
+return 0
