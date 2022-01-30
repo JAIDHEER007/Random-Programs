@@ -1,6 +1,3 @@
-from csv import excel
-
-
 class Toy:
     def __init__(self, tid, ttype, price) -> None:
         self.tid = tid
@@ -47,12 +44,26 @@ if __name__ == '__main__':
     store1.calculateDiscount()
     
     # Output
+    olWithDiscount = []
+    olWithoutDiscount = []
+
     for toy in store1.toyObjs:
         tid = toy.tid
         price = toy.price
-        discountPrice = price - toy.discountApplicable
 
-        print("{} {} {}".format(tid, price, discountPrice))
+        if toy.discountApplicable == 0:
+            olWithoutDiscount.append([tid, price, price])
+        else:
+            olWithDiscount.append([tid, price, price - toy.discountApplicable])
+
+
+    olWithDiscount.sort(key = lambda l:l[2], reverse = True)
+    # olWithoutDiscount.sort(key = lambda l:l[2], reverse = True)
+
+    for toy in olWithDiscount:
+        print("{} {} {}".format(toy[0], toy[1], toy[2]))
+    for toy in olWithoutDiscount:
+        print("{} {} {}".format(toy[0], toy[1], toy[2]))
 
 
 
