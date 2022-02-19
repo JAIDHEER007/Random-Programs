@@ -1,7 +1,8 @@
 from http.server import BaseHTTPRequestHandler, HTTPServer
+import socket
 import time
 
-hostName = "192.168.167.194"
+hostName = socket.gethostbyname(socket.gethostname())
 serverPort = 8080
 
 class MyServer(BaseHTTPRequestHandler):
