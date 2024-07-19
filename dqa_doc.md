@@ -617,7 +617,91 @@ The `log_entry()` function is a decorator used to add logging functionality to o
 #### Purpose:
 The `log_entry()` decorator provides a simple way to add entry logging to functions. This helps in tracking function calls and understanding the flow of execution, which is valuable for debugging and monitoring. By using this decorator, developers can easily add consistent logging across multiple functions without manually adding log statements to each one.
 
+## Chrome WebDriver Options
 
+### 1. Disabling Console Logging
+
+```python
+opt.add_experimental_option("excludeSwitches", ["enable-logging"])
+```
+This option disables console logging in Chrome. It helps reduce unnecessary logs that can clutter the console, making it easier to focus on your own application's output.
+
+### 2. Stopping Images from Loading
+
+```python
+prefs = {"profile.managed_default_content_settings.images": 2}
+opt.add_experimental_option("prefs", prefs)
+```
+This setting prevents images from loading in the browser. This can speed up page loads and reduce memory usage, which is useful for automation tasks where images are not needed.
+
+### 3. Ignoring SSL Errors
+
+```python
+opt.add_argument('--ignore-ssl-errors=yes')
+opt.add_argument('--ignore-certificate-errors')
+```
+These arguments instruct Chrome to ignore SSL certificate errors and other certificate-related issues. This is helpful for testing sites with self-signed or invalid certificates.
+
+### 4. Performance Boost
+
+```python
+opt.add_argument('--no-proxy-server')
+opt.add_argument("--proxy-server='direct://'")
+opt.add_argument("--proxy-bypass-list=*")
+```
+- `--no-proxy-server`: Disables the use of any proxy server.
+- `--proxy-server='direct://'`: Directs traffic to bypass any proxy settings.
+- `--proxy-bypass-list=*`: Ensures that no addresses are routed through a proxy.
+
+These options can improve performance by avoiding the use of proxies, which can introduce latency and additional overhead.
+
+### 5. Keeping the Browser Open
+
+```python
+opt.add_experimental_option("detach", True)
+```
+This option keeps the browser open after the WebDriver script has finished executing. This is useful for debugging purposes, allowing you to inspect the state of the browser after the script has completed.
+
+### 6. Opening the Browser in Maximized Mode
+
+```python
+opt.add_argument("--start-maximized")
+```
+This argument opens the browser in a maximized window. This is often used to ensure that the browser window is large enough to display all page elements correctly during automation.
+
+### 7. Headless Mode (Commented Out)
+
+```python
+# opt.add_argument('--headless')
+```
+The `--headless` argument runs Chrome in headless mode, meaning it operates without a graphical user interface. This is useful for running automation scripts on servers or environments where a GUI is not available. Note that this option is commented out in the provided script.
+
+## Modules Required
+**attrs**: 23.2.0 - Provides a way to define immutable and mutable classes with ease.\
+**certifi**: 2024.7.4 - Provides Mozilla's CA Bundle for verifying SSL certificates.\
+**cffi**: 1.16.0 - Provides a Foreign Function Interface for calling C code from Python.\
+**colorama**: 0.4.6 - Simplifies the use of ANSI colors in terminal output.\
+**easygui**: 0.98.3 - Provides easy-to-use graphical user interface (GUI) dialogs.\
+**h11**: 0.14.0 - A pure-Python implementation of HTTP/1.1.\
+**idna**: 3.7 - Implements the Internationalized Domain Names in Applications (IDNA) standard.\
+**numpy**: 2.0.0 - Provides support for large, multi-dimensional arrays and matrices.\
+**outcome**: 1.3.0.post0 - Provides a framework for working with asynchronous operations.\
+**pandas**: 2.2.2 - Offers data structures and data analysis tools for Python.\
+**pycparser**: 2.22 - A C parser used for parsing C code into an abstract syntax tree.\
+**PySocks**: 1.7.1 - A Python SOCKS client module used for network proxying.\
+**python-dateutil**: 2.9.0.post0 - Provides powerful extensions to the standard `datetime` module.\
+**pytz**: 2024.1 - Enables accurate and timezone-aware date and time operations.\
+**selenium**: 4.22.0 - Automates web browser interaction for testing purposes.\
+**six**: 1.16.0 - A Python 2 and 3 compatibility library.\
+**sniffio**: 1.3.1 - Provides a mechanism to detect which asynchronous library is in use.\
+**sortedcontainers**: 2.4.0 - Implements sorted list, dict, and set data structures.\
+**trio**: 0.26.0 - A library for async/await concurrency and structured concurrency.\
+**trio-websocket**: 0.11.1 - WebSocket support for the Trio asynchronous library.\
+**typing_extensions**: 4.12.2 - Backports of typing features for older Python versions.\
+**tzdata**: 2024.1 - Provides timezone data to the `pytz` library.\
+**urllib3**: 2.2.2 - A powerful HTTP client for Python, used for making HTTP requests.\
+**websocket-client**: 1.8.0 - A WebSocket client for Python.\
+**wsproto**: 1.2.0 - A low-level WebSocket protocol implementation.\
 
 
 
