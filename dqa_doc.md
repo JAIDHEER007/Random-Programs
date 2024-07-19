@@ -417,3 +417,207 @@ The `gui.py` file provides graphical user interface (GUI) functions for user int
 
 The `gui.py` file facilitates user interactions by providing simple dialog boxes for entering login credentials and selecting files. It handles user inputs through `easygui` dialogs and incorporates logging to track user interactions and potential issues.
 
+## Top level Execution Chart of Main.py
+```mermaid
+graph TD
+    A[Start Program] --> B[Import Modules]
+    B --> C[Set Up Chrome Driver Options]
+    C --> D[Show Chromedriver File Selector]
+    D --> E[Initialize WebDriver]
+    E --> F[Open Siebel Home URL]
+    F --> G[Show Login Box]
+    G --> H[Login to Siebel]
+    H --> I[Check Login Status]
+    I --> |Success| J[Show CSV File Selector]
+    I --> |Retry| G[Show Login Box]
+    J --> K[Initialize CSV Handler]
+    K --> L[Get Total SR Count]
+    L --> M[Process SRs in Batches]
+    M --> N[Search for SRs]
+    N --> O[Process SR]
+    O --> P[Update SR Status and Time Taken]
+    P --> Q[Move to Next SR]
+    Q --> |Next SR| N[Search for SRs]
+    Q --> |End of Batch or Total SR Count| R[Finish Processing]
+    R --> S[Save CSV File]
+    S --> T[Logout from Siebel]
+    T --> U[Quit WebDriver]
+    U --> V[End Program]
+
+    subgraph Error Handling
+        X[Exception Occurred] --> Y[Log Exception]
+        Y --> U
+    end
+
+    E --> X
+    M --> X
+```
+
+## Function Call Trace of SR V Batch Processing
+```mermaid
+flowchart TD
+    A["Start SR Batch Processing"]
+
+    A --> B["search_for_sr(sr_string)"]
+    B --> C["get_sr_number()"]
+    C --> D["get_sr_status()"]
+
+    
+    
+    D -->|Not Done| E["Open SR Notes Tab<br>open_siebel_navbar_item('Notes')"]
+    E --> G["Add SR Note<br>add_sr_note('Closing due to inactivity and no follow up from the requester.')"]
+    G --> H["Check if SR Abstract is Present or Not<br>validate_and_update_abstract('This is a redundant SR')"]
+
+    H --> I["Update SR Account Name<br>siebel_form_send_keys(By.NAME, names.SR_ACCOUNT_NAME_BOX, 'ADP CORPORATE (ALL BU\'S)')"]
+    I --> J["Update SR Super Type<br>siebel_form_send_keys(By.NAME, names.SR_SUPER_TYPE_BOX, 'General')"]
+    J --> K["Update SR Type<br>siebel_form_send_keys(By.NAME, names.SR_TYPE_BOX, 'Internal Support')"]
+    K --> L["Update SR Sub Type<br>siebel_form_send_keys(By.NAME, names.SR_SUB_TYPE_BOX, 'Question / Inquiry')"]
+    L --> M["Update SR Source<br>siebel_form_send_keys(By.NAME, names.SR_SOURCE_BOX, 'Automated Email')"]
+    M --> N["Update SR Asset<br>siebel_form_send_keys(By.NAME, names.SR_ASSET_BOX, 'Siebel CRM Call Center')"]
+
+    N --> O["save_sr(driver)"]
+    O --> P["close_sr(driver)"]
+
+    P --> R["csv_handler.get_status(sr_number)"]
+    R --> S["csv_handler.set_time_taken(sr_number, time_taken)"]
+    S --> T["csv_handler.set_status(sr_number, 'Done')"]
+
+    T --> U["get_sr_index()"]
+    U --> W["if SR Index % SR_LIMIT == 0 or SR Index == total_sr_count"]
+    
+    W --> |Yes| X["Batch Completed<br>Move to next Batch"]
+    W --> |No| Y["Batch Not Completed<br>click_next_arrow(driver)"]
+
+    D --> |Done| U
+```
+
+### `siebel_form_send_keys(driver, wait_time, by_field, query_field, key)`
+
+The `siebel_form_send_keys()` function is designed to input text into a form field within the Siebel application using Selenium. This function attempts to locate a web element and send keys to it, with built-in retry logic to handle cases where the element might not be immediately available.
+
+#### Parameters:
+- **`driver`** (`WebDriver`): The Selenium WebDriver instance used to interact with the web page.
+- **`wait_time`** (`int`): The maximum amount of time (in seconds) to wait for the element to be present.
+- **`by_field`** (`By`): The method used to locate the element (e.g., `By.NAME`, `By.ID`).
+- **`query_field`** (`str`): The value used to locate the element (e.g., element ID, name).
+- **`key`** (`str`): The text to be sent to the input field.
+
+#### Functionality:
+1. **Logging the Key**:
+   - The function logs the key value being sent to the form field for debugging purposes.
+
+2. **Retry Mechanism**:
+   - Initializes a `delay` variable starting at 1 second and an `itr` (iteration) counter starting at 1.
+   - Enters a loop with a maximum of `MAX_LOOP_ITER` iterations.
+
+3. **Element Interaction**:
+   - Inside the loop, the function attempts to find the web element using the provided `by_field` and `query_field`.
+   - If the element is found, it is made visible (in case it's hidden) by setting its `display` style to `block`.
+   - Clears any existing text in the field and sends the new text (`key`) to it.
+   - Exits the loop if successful.
+
+4. **Exception Handling**:
+   - If an exception occurs (e.g., element not found, stale element reference), it logs the exception details and waits for a short period before retrying.
+   - Increases the delay by 1 second on each iteration to account for potential delays in element availability.
+
+5. **Failure Handling**:
+   - If the maximum number of iterations is reached without successfully interacting with the element, the function raises an exception indicating that the maximum loop iterations were reached.
+
+#### Purpose:
+The primary purpose of this function is to ensure that the form field is available and ready to receive input, even if it takes some time for the field to become interactable. This is particularly useful in web applications with dynamic content where elements might load or become available after a delay.
+
+### `open_siebel_navbar_item(driver, item_name)`
+
+The `open_siebel_navbar_item()` function is used to interact with and open a specific item in the Siebel navigation bar using Selenium. It handles cases where the item may be directly clickable or may require interaction with a dropdown menu.
+
+#### Parameters:
+- **`driver`** (`WebDriver`): The Selenium WebDriver instance used to interact with the web page.
+- **`item_name`** (`str`): The name of the navigation bar item to be opened.
+
+#### Functionality:
+1. **Locate Navigation Bar**:
+   - The function first attempts to locate the navigation bar element using its ID (`ids.SR_OPTIONS_NAVIGATION_BAR`).
+
+2. **Try Direct Click**:
+   - It tries to find and click the desired navigation bar item directly using its XPath (`xpaths.SR_NAV_BAR_ITEMS`), which is formatted with the `item_name`.
+   - If the item is found and clicked, the function completes and returns.
+
+3. **Handle Dropdown Menu**:
+   - If the direct click attempt fails (e.g., the item is not present or not clickable), the function logs that the item was not found in the navigation bar and attempts to open a dropdown menu.
+   - It then enters a loop with a maximum of `MAX_LOOP_ITER` iterations to retry finding the item in the dropdown.
+
+4. **Retry Mechanism**:
+   - Within the loop, it tries to find the item in the dropdown menu using its XPath (`xpaths.SR_NAV_BAR_DROPDOWN_OPTION`).
+   - If the item is found and clicked, the loop breaks.
+
+5. **Exception Handling**:
+   - If an exception occurs (e.g., element not found, stale element reference), the function logs the exception and waits for a short period before retrying.
+   - The delay increases by 1 second with each iteration to account for potential delays in the element's availability.
+
+6. **Failure Handling**:
+   - If the maximum number of iterations is reached without successfully finding or clicking the item, the function raises an exception indicating that the maximum loop iterations were reached.
+
+#### Purpose:
+The function ensures that the specified navigation bar item is opened, whether it is directly clickable or hidden within a dropdown menu. This is useful for navigating complex user interfaces where menu items might be dynamically loaded or require interaction with nested elements.
+
+### `add_sr_note(driver, sr_note)`
+
+The `add_sr_note()` function is used to add a note to a service request (SR) in the Siebel application. It handles the process of locating the "Add Note" button, interacting with the note input fields, and inputting the provided note text.
+
+#### Parameters:
+- **`driver`** (`WebDriver`): The Selenium WebDriver instance used to interact with the web page.
+- **`sr_note`** (`str`): The text of the note to be added to the service request.
+
+#### Functionality:
+1. **Locate and Click "Add Note" Button**:
+   - The function initializes a retry mechanism to find and click the "Add Note" button, identified by its ID (`ids.SR_NOTES_ADD_BUTTON`).
+   - It enters a loop with a maximum of `MAX_LOOP_ITER` iterations to account for potential delays or issues in locating the button.
+   - On each iteration, it attempts to find the button and click it. If successful, it breaks out of the loop.
+
+2. **Handle Exception**:
+   - If an exception occurs (e.g., element not found, stale element reference), the function logs the exception details and waits for a short period before retrying.
+   - The delay increases by 1 second with each iteration to manage potential delays in element availability.
+
+3. **Locate and Fill Note Text Area**:
+   - After successfully clicking the "Add Note" button, the function continues to a second retry mechanism to find the note text area.
+   - It waits for the note section to become visible and locates the note text area using its XPath (`xpaths.SR_NOTE_TEXTAREA`).
+   - It then clicks on the note text area, clears any existing text, and inputs the provided `sr_note` text.
+
+4. **Log Success**:
+   - Upon successfully adding the note, the function logs a message indicating that the note was added.
+
+5. **Failure Handling**:
+   - If the maximum number of iterations is reached without successfully interacting with the note section, the function raises an exception indicating that the maximum loop iterations were reached.
+
+#### Purpose:
+The function ensures that a note can be added to a service request by managing interactions with dynamic elements and handling cases where elements might not be immediately available. It is particularly useful for automating the process of adding notes in a web application with complex or delayed UI elements.
+
+### `log_entry(func)`
+
+The `log_entry()` function is a decorator used to add logging functionality to other functions. It wraps a function to log its entry and exit, providing a way to trace the execution flow and debug issues.
+
+#### Parameters:
+- **`func`** (`Callable`): The function to be decorated. This is the function whose execution will be logged.
+
+#### Functionality:
+1. **Decorator Definition**:
+   - The `log_entry()` function takes another function (`func`) as an argument and returns a new function (`wrapper`) that wraps the original function.
+
+2. **Wrapper Function**:
+   - **Logging Entry**:
+     - When the wrapped function is called, the `wrapper` function logs a debug message indicating that the decorated function has been entered. It uses the function's name (`func.__name__`) to provide context in the log message.
+   - **Function Execution**:
+     - The `wrapper` function then calls the original function (`func`) with the provided arguments (`*args`) and keyword arguments (`**kwargs`), allowing it to execute as intended.
+   - **Return Value**:
+     - After executing the original function, the `wrapper` function returns the result of the function call.
+
+3. **Logging Framework**:
+   - The logging is handled using the `logger.debug()` method, which logs messages at the DEBUG level. This is useful for development and debugging but might be turned off or redirected in production environments.
+
+#### Purpose:
+The `log_entry()` decorator provides a simple way to add entry logging to functions. This helps in tracking function calls and understanding the flow of execution, which is valuable for debugging and monitoring. By using this decorator, developers can easily add consistent logging across multiple functions without manually adding log statements to each one.
+
+
+
+
+
